@@ -11,6 +11,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using Unity.Collections.LowLevel.Unsafe;
 
+//TRY TO MAKE IT SO RETRIEVES A Y VALUES AFTER EVERY 7 DAYS!
 
 public class FinanceGraph : MonoBehaviour
 {
@@ -67,6 +68,10 @@ public class FinanceGraph : MonoBehaviour
 
         }
         RevenueAxis.Enqueue(newyvalue);
+        if (newyvalue == 0)
+        {
+            Debug.Log("Revenue graph not updated");
+        }
         Showgraph(RevenueAxis, (float _f) => "£" + Mathf.RoundToInt(_f));
         FinancePage.gameObject.SetActive(false);
     }
