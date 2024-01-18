@@ -12,6 +12,7 @@ public class DatabaseManager : MonoBehaviour
 {
     // Start is called before the first frame update
     private MySqlConnection connection;
+    public Canvas CompensationCanvas;
     private string connectionstring = "Server=localhost;Database=newproducts;User ID=root;password=Liverpool123!"; // DATABASE DETAILS
     public TMP_InputField SearchBar;
     public Transform ProductContainer;
@@ -28,8 +29,10 @@ public class DatabaseManager : MonoBehaviour
     public TextMeshProUGUI availableunits;
     public Canvas FinancePage;
     public Canvas MyProductsPage;
+    public Canvas DisplayQuantityCanvas;
     public TMP_InputField quantityInput;
-
+    public static List<string> MyPortfolio { get; } = new List<string>();
+    public static Dictionary<string, int> StockDictionary = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
 
     void Start()
@@ -181,7 +184,7 @@ public class DatabaseManager : MonoBehaviour
 
                         buttonComponent.onClick.AddListener(() => OnProductButtonClick(productName));
 
-                        
+
                     }
                     else
                     {
@@ -257,7 +260,7 @@ public class DatabaseManager : MonoBehaviour
                         if (productReader.Read())
                         {// gets respective details for the current product from the product table and assigns them to these variables
                             double PricePerUnit = productReader.GetDouble("PricePerUnit");
-                            int QualityRating = productReader.GetInt32("QualityRating");                 
+                            int QualityRating = productReader.GetInt32("QualityRating");
                             int CSRating = productReader.GetInt32("CSRating");
                             int SupplierID = productReader.GetInt32("SupplierID");
                             productReader.Close();// closes connection before executing a new query
@@ -282,7 +285,7 @@ public class DatabaseManager : MonoBehaviour
                                         priceperunit.text = PricePerUnit.ToString();  // text components of TextMeshPros updated
                                         qualityRating.text = QualityRating.ToString();
 
-                                        
+
                                         suppliername.text = CompanyName;
                                         availableunits.text = NumberOfAvailableUnits.ToString();
                                     }
@@ -304,6 +307,11 @@ public class DatabaseManager : MonoBehaviour
     public void Return() // button on ProductInfoCanvas when clicked the ProductInfoCanvas will disappear
     {
         ProductInfoCanvas.gameObject.SetActive(false);
+        CompensationCanvas.gameObject.SetActive(false);
+        if (DisplayQuantityCanvas.gameObject.activeSelf)
+        {
+            DisplayQuantityCanvas.gameObject.SetActive(false); // when user presses ok the canvas disappears from users visibillity
+        }
     }
 
     public void OnFirstButtonClick() // when first button displayed is clicked
@@ -374,14 +382,13 @@ public class DatabaseManager : MonoBehaviour
             Debug.LogError("Error fetching product details: " + e.Message);
         }
     }
-    public List<string> MyPortfolio = new List<string>();
-    public Dictionary<string, int> StockDictionary = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
 
 
     public void OnPurchaseButtonClick()
     {
         string QuantityInput = quantityInput.text; // input to inputfield
-        
+
         try
         {
             if (int.TryParse(QuantityInput, out int quantity))
@@ -395,30 +402,35 @@ public class DatabaseManager : MonoBehaviour
                     double remainingCapital = currentCapital - cost;
                     FinancePage.GetComponent<Sales>().CurrentCapital.text = remainingCapital.ToString(); // changes its value
                     Debug.Log("Purchase successful. Remaining balance: " + remainingCapital);
-                    if(!MyPortfolio.Contains(ProductNameText.text)) // makes sure that 2 textmeshpros in MyProductsPage dont have the same productname
+                    if (!MyPortfolio.Contains(ProductNameText.text)) // makes sure that 2 textmeshpros in MyProductsPage dont have the same productname
                     {
                         MyPortfolio.Add(ProductNameText.text);
                         int productposition = MyPortfolio.Count;
                         Debug.Log("Product purchased. Product Name: " + ProductNameText.text + ", Position: " + productposition);
                         AddToMyProductPage(productposition, ProductNameText.text);
 
+                        Debug.Log("MyPortfolio Contents: " + string.Join(", ", MyPortfolio));
+                        Debug.Log("Stock Dictionary Keys Before Update: " + string.Join(", ", StockDictionary.Keys)); // checking correct keys present in dictionary
                         UpdateStock(ProductNameText.text, quantity);
+                        Debug.Log("Stock Dictionary Keys After Update: " + string.Join(", ", StockDictionary.Keys));
+
+
                     }
                     else
                     {
-                        Debug.Log("Buying more stock.");
+                        Debug.Log("Buying more stock."); // if buying more of the same product previously purchased
                         UpdateStock(ProductNameText.text, quantity);
                     }
 
                 }
-                else if (MyPortfolio.Count == 10) 
+                else if (MyPortfolio.Count == 10)
                 {
                     Debug.Log("Can only have 10 products in your portfolio at any 1 time.");
 
                 }
                 else
                 {
-                    Debug.Log("Insufficient funds. Purchase failed."); 
+                    Debug.Log("Insufficient funds. Purchase failed.");
                 }
             }
             else if (string.IsNullOrWhiteSpace(QuantityInput))
@@ -438,6 +450,7 @@ public class DatabaseManager : MonoBehaviour
             Debug.LogError("QuantityInput: " + QuantityInput);  // error checking methods
             Debug.LogError("PricePerUnit: " + priceperunit.text);
         }
+        quantityInput.text = string.Empty;
     }
     public void UpdateStock(string productName, int quantity)
     {
@@ -446,15 +459,16 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log("Updating stock for " + productName + ". Quantity before update: " + (StockDictionary.ContainsKey(productName) ? StockDictionary[productName].ToString() : "Not found"));
         if (StockDictionary.ContainsKey(productName))
         {
-            StockDictionary[productName] += quantity;
+            StockDictionary[productName] += quantity; // updates value associated with the key
         }
         else
         {
-            StockDictionary.Add(productName, quantity);
+            StockDictionary.Add(productName, quantity); // adds to dictionary
         }
         Debug.Log("Updated stock for " + productName + ". Quantity after update: " + StockDictionary[productName].ToString());
         Debug.Log("Stock Dictionary After Update: " + string.Join(", ", StockDictionary.Keys));
     }
+
 
     private void AddToMyProductPage(int productposition, string productName)
     {
@@ -467,9 +481,9 @@ public class DatabaseManager : MonoBehaviour
             Debug.LogError("Invalid product position: " + productposition);
         }
     }
-        
-        
-    
+
+
+
 
 
 }
