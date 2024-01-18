@@ -18,59 +18,69 @@ public class TimeFunction : MonoBehaviour
     public int CurrentDayofMonth = 1;
     public string CurrentWeekDay;
     public int WeekDayIndex = 2; // changes value depending on user input 
+    public static int daysforward;
+    public RectTransform Graphcontainer;
+    public Canvas FinancePage;
+
 
     void Start()
     {
-          
+
     }
     void Update()
     {
-      
-      
-        
+
+
+
     }
-    
+
 
     public void MoveForward(string timefunctioninput)
     {
-        Year.rectTransform.anchoredPosition = new Vector2(-16,200); // makes sure that when the values of these change their postion remains a constant so they dont move 
+
+        Year.rectTransform.anchoredPosition = new Vector2(-16, 200); // makes sure that when the values of these change their postion remains a constant so they dont move 
         DayOfMonth.rectTransform.anchoredPosition = new Vector2(-16, 133);
         Weekday.rectTransform.anchoredPosition = new Vector2(-16, 63);
-        
+
         timefunctioninput = Input.text;// takes the input from user
         int.TryParse(timefunctioninput, out int value); // attempts to convert it to int
         Debug.Log(value);
-        if(!int.TryParse(timefunctioninput, out value))
+        if (!int.TryParse(timefunctioninput, out value))
         {
             Debug.Log("invalid input");
         }
-        else if(value > 7)
+        else if (value > 7)
         {
             Debug.Log("Cannot go forward by an interval greater than 1 week.");
         }
-        if(value <= 7)
+        if (value <= 7)
         {
             CurrentDayofMonth = CurrentDayofMonth + value;// day of month updated when user inputs an integer value within a specific range (1-7)
+            daysforward = value;
+
+
         }
         MonthsYears(value);
         string[] WeekDay = new string[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
-       
-        if(value <= 7)
+
+        if (value <= 7)
         {
             WeekDayIndex = WeekDayIndex + value; //day of week updated when user inputs an integer value within the range
             ValidWeekday(WeekDay, WeekDayIndex);
-            
+
         }
         else
         {
             CurrentWeekDay = WeekDay[WeekDayIndex];
         }
         Year.text = CurrentYear.ToString(); // link text mesh pros to these variables which will change during runtime
-        DayOfMonth.text =  CurrentMonthName + " " + CurrentDayofMonth.ToString();
+        DayOfMonth.text = CurrentMonthName + " " + CurrentDayofMonth.ToString();
         Weekday.text = CurrentWeekDay;
-  
+        Input.text = string.Empty;
+
+
     }
-    
+
     public void MonthsYears(int value) // sets no. of days in each month and makes sure that the Month Name
                                        // and the day of the months update when the user has reached the end of a particular month
     {
@@ -78,7 +88,7 @@ public class TimeFunction : MonoBehaviour
         int FebDays = 28;
         int MarDays = 31;
         int AprDays = 30;
-        int MayDays = 31;  
+        int MayDays = 31;
         int JunDays = 30;
         int JulDays = 31;
         int AugDays = 31;
@@ -88,19 +98,19 @@ public class TimeFunction : MonoBehaviour
         int DecDays = 31;
         int diff;
         int startval;
-        if (CurrentMonthID == 01) 
+        if (CurrentMonthID == 01)
         {
             CurrentMonthName = "January";
-    
-            if(CurrentDayofMonth > JanDays)
+
+            if (CurrentDayofMonth > JanDays)
             {
                 CurrentMonthID = 02;
-                diff = CurrentDayofMonth - JanDays;  
+                diff = CurrentDayofMonth - JanDays;
                 startval = diff;
                 CurrentDayofMonth = startval;// when going to next month it begins on the correct Dayofthemonth depending on the user input
             }
         }
-        if(CurrentMonthID == 02)
+        if (CurrentMonthID == 02)
         {
             CurrentMonthName = "February";
 
@@ -204,7 +214,7 @@ public class TimeFunction : MonoBehaviour
         if (CurrentMonthID == 10)
         {
             CurrentMonthName = "October";
-            if (CurrentDayofMonth> OctDays)
+            if (CurrentDayofMonth > OctDays)
             {
                 CurrentMonthID = 11;
                 diff = CurrentDayofMonth - OctDays;
@@ -233,7 +243,7 @@ public class TimeFunction : MonoBehaviour
                 CurrentMonthID = 01;
                 diff = CurrentDayofMonth - DecDays;
                 startval = diff;
-                CurrentDayofMonth = startval;     
+                CurrentDayofMonth = startval;
                 CurrentYear = CurrentYear += 1; // 
             }
         }
@@ -250,8 +260,8 @@ public class TimeFunction : MonoBehaviour
         {
             CurrentWeekDay = WeekDay[WeekDayIndex];
         }
-        
-        
+
+
     }
 
 }
