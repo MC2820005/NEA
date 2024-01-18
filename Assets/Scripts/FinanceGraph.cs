@@ -6,6 +6,10 @@ using CodeMonkey.Utils;
 using UnityEngine.UIElements;
 using Image = UnityEngine.UI.Image;
 using System;
+using System.Runtime.CompilerServices;
+using System.Linq;
+using Unity.VisualScripting;
+using Unity.Collections.LowLevel.Unsafe;
 
 
 public class FinanceGraph : MonoBehaviour
@@ -14,35 +18,79 @@ public class FinanceGraph : MonoBehaviour
     [SerializeField] private Sprite circleSprite;
     private RectTransform labeltemplateX;
     private RectTransform labeltemplateY;
+    private Queue<double> RevenueAxis = new Queue<double>(5);
+    public Canvas FinancePage;
+    public double initialval = 0;
+    public static int daysforward;
+    public GameObject Gameobject;
+
+
 
     private void Awake()
     {
-        
-        graphcontainer =transform.Find("graphcontainer").GetComponent<RectTransform>();
+
+        Transform foundTransform = transform.Find("graphcontainer");
+        if (foundTransform != null)
+        {
+            Debug.Log("Graphcontainer found!");
+            graphcontainer = foundTransform.GetComponent<RectTransform>();
+        }
+        else
+        {
+            Debug.LogError("Graphcontainer not found!");
+        }
         labeltemplateX = graphcontainer.Find("labeltemplateX").GetComponent<RectTransform>();
         labeltemplateY = graphcontainer.Find("labeltemplateY").GetComponent<RectTransform>();
-        List<int>OutputList = new List<int>() { 1,2,3,4,5};
-        Queue<int> RevenueAxis = new Queue<int>(4);
-        List<int>revenueList = new List<int>() { 7,12,23,34};
-        Showgraph(revenueList, (float _f) => "£" + Mathf.RoundToInt(_f));
-    }
-    private void UpdateRevenueLine(List<int> revenueList)
-    {
-        int time = 0;
-        
-        if(time > 7)
-        {
-            revenueList.Clear();
-            for(int i = 0; i <7 ; i++)
-            {
+        List<int> OutputList = new List<int>() { 1, 2, 3, 4, 5 };
 
-            }
-        }
+
     }
+    private void Update()
+    {
+
+    }
+    void Start()
+    {
+
+
+    }
+    public void UpdateParameters()
+    {
+        FinancePage.gameObject.SetActive(true);
+        Debug.Log("UpdateParameters method called.");
+        Debug.Log("called");
+        bool isQueueFull = RevenueAxis.Count == 5;
+        double newyvalue = RetrieveYvalues();
+        if (isQueueFull)
+        {
+            UpdateGraphData();
+
+        }
+        RevenueAxis.Enqueue(newyvalue);
+        Showgraph(RevenueAxis, (float _f) => "£" + Mathf.RoundToInt(_f));
+        FinancePage.gameObject.SetActive(false);
+    }
+    private double RetrieveYvalues()
+    {
+        FinancePage.gameObject.SetActive(true);
+        double revenue = GetRevenue();
+        Debug.Log(revenue);
+        FinancePage.gameObject.SetActive(false);
+        return revenue;
+
+    }
+
+    public double GetRevenue()
+    {
+        return Sales.CurrentRevenue;
+    }
+
+
+
     private GameObject Createcircle(Vector2 anchoredPosition)
     {
         GameObject gameObject = new GameObject("circle", typeof(Image));
-        gameObject.transform.SetParent(graphcontainer,false);
+        gameObject.transform.SetParent(graphcontainer, false);
         gameObject.GetComponent<Image>().sprite = circleSprite;
         RectTransform rectransform = gameObject.GetComponent<RectTransform>();
         rectransform.anchoredPosition = anchoredPosition;
@@ -52,32 +100,81 @@ public class FinanceGraph : MonoBehaviour
         return gameObject;
 
     }
-    private void Showgraph(List<int> revenueList, Func<float, string> GetaxislabelY = null)
-    {
-       
-        if (GetaxislabelY == null)
-        {
-            GetaxislabelY = delegate (float _f) { return Mathf.RoundToInt(_f).ToString(); };
-        }
-        float graphHeight = graphcontainer.sizeDelta.y;
-        float ymaximum = 0f;
-        foreach (int value in revenueList)
-        {
-            if(value > ymaximum)
-            {
-                ymaximum = value;
-            }
-        }
-        ymaximum = ymaximum * 1.2f;
+    private List<Transform> yAxisLabels = new List<Transform>();
+    private List<Transform> xAxisLabels = new List<Transform>();// keep track of previously created labels 
+    private List<Transform> dotConnections = new List<Transform>();
+    private List<GameObject> dotObjects = new List<GameObject>();
 
-        float xSize =50f;
+    private void Showgraph(Queue<double> revenueAxis, Func<float, string> GetAxisLabelY = null)
+    {
+        Debug.Log("ShowGraph method called.");
+        if (revenueAxis.Count == 0)
+        {
+            Debug.LogWarning("RevenueAxis queue is empty. No data to display.");
+            return;
+        }
+        if (GetAxisLabelY == null)
+        {
+            GetAxisLabelY = (float _f) => "£" + Mathf.RoundToInt(_f).ToString();
+        }
+        if (graphcontainer == null)
+        {
+            Debug.LogError("GraphContainer is null!");
+            return;
+        }
+
+        // Destroy previous Y-axis labels, X-axis labels, dots, and dot connections
+        foreach (Transform label in yAxisLabels)
+        {
+            Destroy(label.gameObject);
+        }
+        yAxisLabels.Clear();
+
+        foreach (Transform label in xAxisLabels)
+        {
+            Destroy(label.gameObject);
+        }
+        xAxisLabels.Clear();
+
+        foreach (GameObject dot in dotObjects)
+        {
+            Destroy(dot.gameObject);
+        }
+        dotObjects.Clear();
+
+        foreach (Transform connection in dotConnections)
+        {
+            Destroy(connection.gameObject);
+        }
+        dotConnections.Clear();
+
+        float graphHeight = graphcontainer.sizeDelta.y;
+        float yMaximum = (float)revenueAxis.Max();
+        yMaximum = Mathf.Max(1f, yMaximum * 1.2f);
+
+        float xSize = 200f;
         GameObject lastCircleGameObject = null;
 
-        for(int i = 0; i < revenueList.Count; i++)
+        // Instantiate Y-axis labels only once
+        int separatorCount = 10;
+        for (int i = 0; i <= separatorCount; i++)
         {
-            float xposition = i * xSize - (xSize*2);
-            float yposition = (revenueList[i] / ymaximum) * graphHeight;
-           GameObject circleGameObject =  Createcircle(new Vector2(xposition, yposition));
+            RectTransform labelY = Instantiate(labeltemplateY);
+            labelY.SetParent(graphcontainer, false);
+            float normalizedValue = i * 1f / separatorCount;
+            labelY.gameObject.SetActive(true);
+            labelY.anchoredPosition = new Vector2(-220f, normalizedValue * graphHeight);
+            labelY.GetComponent<Text>().text = GetAxisLabelY(normalizedValue * yMaximum);
+            yAxisLabels.Add(labelY);
+        }
+
+        for (int i = 0; i < revenueAxis.Count; i++)
+        {
+            float xPosition = i * xSize - 200f;
+            float yPosition = (float)(revenueAxis.ElementAt(i) / yMaximum) * graphHeight;
+            GameObject circleGameObject = Createcircle(new Vector2(xPosition, yPosition));
+            dotObjects.Add(circleGameObject);  // Add the new dot to the list
+
             if (lastCircleGameObject != null)
             {
                 CreateDotConnection(lastCircleGameObject.GetComponent<RectTransform>().anchoredPosition, circleGameObject.GetComponent<RectTransform>().anchoredPosition);
@@ -85,36 +182,54 @@ public class FinanceGraph : MonoBehaviour
 
             lastCircleGameObject = circleGameObject;
             RectTransform labelX = Instantiate(labeltemplateX);
-            labelX.SetParent(graphcontainer,false);
+            labelX.SetParent(graphcontainer, false);
             labelX.gameObject.SetActive(true);
-            labelX.anchoredPosition = new Vector2(xposition, -70f);
-            labelX.GetComponent<Text>().text = i.ToString();
-
-        }
-        int seperatorCount = 10;
-        for(int i = 0; i<=seperatorCount; i++)
-        {
-            RectTransform labelY = Instantiate(labeltemplateY);
-            labelY.SetParent(graphcontainer,false);
-            float normalizedValue = i*1f / seperatorCount;
-            labelY.gameObject.SetActive(true);
-            labelY.anchoredPosition = new Vector2(-220f, normalizedValue*graphHeight);
-            labelY.GetComponent<Text>().text =GetaxislabelY( normalizedValue * ymaximum);
+            labelX.anchoredPosition = new Vector2(xPosition, -70f);
+            labelX.GetComponent<Text>().text = i.ToString(); // Use i as the x-axis label
+            xAxisLabels.Add(labelX);
         }
     }
-    private void CreateDotConnection(Vector2 dotPositionA , Vector2 dotPositionB)
+
+
+
+
+    private void UpdateGraphData()
     {
-        GameObject gameObject = new GameObject("dot connection", typeof(Image));    
+        // If the queue is full, convert it to a list and update data
+        // Convert the queue to a list
+        List<double> revenueList = RevenueAxis.ToList();
+
+        // Move the current items in the list one index back
+        for (int i = 0; i < revenueList.Count - 1; i++)
+        {
+            revenueList[i] = revenueList[i + 1];
+        }
+
+        // Remove the oldest value
+        revenueList.RemoveAt(revenueList.Count - 1);
+
+        // Convert the list back to a queue
+        RevenueAxis = new Queue<double>(revenueList);
+
+    }
+
+
+    private void CreateDotConnection(Vector2 dotPositionA, Vector2 dotPositionB)
+    {
+        GameObject gameObject = new GameObject("dot connection", typeof(Image));
         gameObject.transform.SetParent(graphcontainer, false);
-        gameObject.GetComponent<Image>().color = new Color(1,1,1,.5f);
+        gameObject.GetComponent<Image>().color = new Color(1, 1, 1, .5f);
         RectTransform rectTransform = gameObject.GetComponent<RectTransform>();
-        Vector2 dir = (dotPositionB - dotPositionA).normalized; 
-        float distance = Vector2.Distance(dotPositionA,dotPositionB);
-        rectTransform.anchorMin =  new Vector2(0, 0);
+        Vector2 dir = (dotPositionB - dotPositionA).normalized;
+        float distance = Vector2.Distance(dotPositionA, dotPositionB);
+        rectTransform.anchorMin = new Vector2(0, 0);
         rectTransform.anchorMax = new Vector2(0, 0);
         rectTransform.sizeDelta = new Vector2(distance, 3f);
-        rectTransform.anchoredPosition = dotPositionA + dir * distance *.5f;
-        rectTransform.localEulerAngles = new Vector3(0,0,UtilsClass.GetAngleFromVectorFloat(dir));
+        rectTransform.anchoredPosition = dotPositionA + dir * distance * .5f;
+        rectTransform.localEulerAngles = new Vector3(0, 0, UtilsClass.GetAngleFromVectorFloat(dir));
 
+        // Add the new dot connection to the list
+        dotConnections.Add(rectTransform);
     }
 }
+
