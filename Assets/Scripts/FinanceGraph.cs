@@ -237,4 +237,3 @@ public class FinanceGraph : MonoBehaviour
         dotConnections.Add(rectTransform);
     }
 }
-

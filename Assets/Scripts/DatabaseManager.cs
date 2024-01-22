@@ -66,8 +66,9 @@ public class DatabaseManager : MonoBehaviour
         {
             connection.Close();
             Debug.Log("Disconnected from the MySQL Database"); // when out of game mode back to scene the connection is closed
-            MyPortfolio.Clear();
+
         }
+
     }
     public void OnInputFieldValueChanged(string input) // Checks for user input into the inputfield
     {

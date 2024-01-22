@@ -13,7 +13,7 @@ public class TimeFunction : MonoBehaviour
     public TMP_Text Weekday;
     public TMP_InputField Input;
     public int CurrentYear = 2023;
-    public int CurrentMonthID = 01; // identifies which month it currently is
+    public static int CurrentMonthID = 01; // identifies which month it currently is
     public string CurrentMonthName;
     public int CurrentDayofMonth = 1;
     public string CurrentWeekDay;
@@ -21,6 +21,10 @@ public class TimeFunction : MonoBehaviour
     public static int daysforward;
     public RectTransform Graphcontainer;
     public Canvas FinancePage;
+    public Canvas Homepage;
+    List<string> usersportfolio = DatabaseManager.MyPortfolio;
+    public static int totaldayspassed = 0;
+    public FinancialData financialDataInstance;
 
 
     void Start()
@@ -33,7 +37,17 @@ public class TimeFunction : MonoBehaviour
 
 
     }
-
+    private void OnApplicationQuit()
+    {
+        if (Homepage != null)
+        {
+            // This method will be called when the application is about to quit
+            // Clear the MyPortfolio list here
+            Homepage.gameObject.SetActive(true);
+            usersportfolio.Clear();
+            Homepage.gameObject.SetActive(false);
+        }
+    }
 
     public void MoveForward(string timefunctioninput)
     {
@@ -57,6 +71,7 @@ public class TimeFunction : MonoBehaviour
         {
             CurrentDayofMonth = CurrentDayofMonth + value;// day of month updated when user inputs an integer value within a specific range (1-7)
             daysforward = value;
+            totaldayspassed += value;
 
 
         }
@@ -67,7 +82,10 @@ public class TimeFunction : MonoBehaviour
         {
             WeekDayIndex = WeekDayIndex + value; //day of week updated when user inputs an integer value within the range
             ValidWeekday(WeekDay, WeekDayIndex);
-
+            if (financialDataInstance != null)
+            {
+                financialDataInstance.Weekly();
+            }
         }
         else
         {
