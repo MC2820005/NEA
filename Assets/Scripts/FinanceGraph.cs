@@ -42,7 +42,6 @@ public class FinanceGraph : MonoBehaviour
         }
         labeltemplateX = graphcontainer.Find("labeltemplateX").GetComponent<RectTransform>();
         labeltemplateY = graphcontainer.Find("labeltemplateY").GetComponent<RectTransform>();
-        List<int> OutputList = new List<int>() { 1, 2, 3, 4, 5 };
 
 
     }
@@ -60,19 +59,19 @@ public class FinanceGraph : MonoBehaviour
         FinancePage.gameObject.SetActive(true);
         Debug.Log("UpdateParameters method called.");
         Debug.Log("called");
-        bool isQueueFull = RevenueAxis.Count == 5;
-        double newyvalue = RetrieveYvalues();
+        bool isQueueFull = RevenueAxis.Count == 5;// max capacity of queue
+        double newyvalue = RetrieveYvalues();// gets a y value
         if (isQueueFull)
         {
-            UpdateGraphData();
-
+            UpdateGraphData();// if queue full then dequeues and each value moves one index forward
+            // deletes previous dot and dot connection
         }
-        RevenueAxis.Enqueue(newyvalue);
+        RevenueAxis.Enqueue(newyvalue);// adds the value to the end of queue
         if (newyvalue == 0)
         {
             Debug.Log("Revenue graph not updated");
         }
-        Showgraph(RevenueAxis, (float _f) => "£" + Mathf.RoundToInt(_f));
+        Showgraph(RevenueAxis, (float _f) => "£" + Mathf.RoundToInt(_f));// displays graph
         FinancePage.gameObject.SetActive(false);
     }
     private double RetrieveYvalues()
@@ -87,7 +86,7 @@ public class FinanceGraph : MonoBehaviour
 
     public double GetRevenue()
     {
-        return Sales.CurrentRevenue;
+        return Sales.CurrentRevenue;// gets the revenue
     }
 
 
@@ -113,7 +112,7 @@ public class FinanceGraph : MonoBehaviour
     private void Showgraph(Queue<double> revenueAxis, Func<float, string> GetAxisLabelY = null)
     {
         Debug.Log("ShowGraph method called.");
-        if (revenueAxis.Count == 0)
+        if (revenueAxis.Count == 0)// at start of the game
         {
             Debug.LogWarning("RevenueAxis queue is empty. No data to display.");
             return;
@@ -155,7 +154,7 @@ public class FinanceGraph : MonoBehaviour
 
         float graphHeight = graphcontainer.sizeDelta.y;
         float yMaximum = (float)revenueAxis.Max();
-        yMaximum = Mathf.Max(1f, yMaximum * 1.2f);
+        yMaximum = Mathf.Max(1f, yMaximum * 1.2f);// updating y maximum of the graph
 
         float xSize = 200f;
         GameObject lastCircleGameObject = null;
@@ -168,7 +167,7 @@ public class FinanceGraph : MonoBehaviour
             labelY.SetParent(graphcontainer, false);
             float normalizedValue = i * 1f / separatorCount;
             labelY.gameObject.SetActive(true);
-            labelY.anchoredPosition = new Vector2(-220f, normalizedValue * graphHeight);
+            labelY.anchoredPosition = new Vector2(-220f, normalizedValue * graphHeight - 27);
             labelY.GetComponent<Text>().text = GetAxisLabelY(normalizedValue * yMaximum);
             yAxisLabels.Add(labelY);
         }
@@ -219,7 +218,7 @@ public class FinanceGraph : MonoBehaviour
     }
 
 
-    private void CreateDotConnection(Vector2 dotPositionA, Vector2 dotPositionB)
+    private void CreateDotConnection(Vector2 dotPositionA, Vector2 dotPositionB)// creates the connection between datapoints
     {
         GameObject gameObject = new GameObject("dot connection", typeof(Image));
         gameObject.transform.SetParent(graphcontainer, false);

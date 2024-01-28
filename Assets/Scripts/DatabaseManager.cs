@@ -31,6 +31,7 @@ public class DatabaseManager : MonoBehaviour
     public Canvas MyProductsPage;
     public Canvas DisplayQuantityCanvas;
     public TMP_InputField quantityInput;
+
     public static List<string> MyPortfolio { get; } = new List<string>();
     public static Dictionary<string, int> StockDictionary = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
@@ -62,14 +63,26 @@ public class DatabaseManager : MonoBehaviour
     }
     void OnApplicationQuit()
     {
+        Debug.Log("Application is quitting...");
         if (connection != null && connection.State != System.Data.ConnectionState.Closed)
         {
             connection.Close();
-            Debug.Log("Disconnected from the MySQL Database"); // when out of game mode back to scene the connection is closed
+            Debug.Log("Disconnected from the MySQL Database");
 
         }
 
     }
+    public void ClearMyPortfolio()
+    {
+        if (MyPortfolio != null)
+        {
+            Debug.Log("Clearing MyPortfolio list...");
+            MyPortfolio.Clear();
+
+        }
+    }
+
+
     public void OnInputFieldValueChanged(string input) // Checks for user input into the inputfield
     {
         if (!string.IsNullOrEmpty(input) && input.Length >= 1)// makes sure entered a character
@@ -470,7 +483,6 @@ public class DatabaseManager : MonoBehaviour
         Debug.Log("Updated stock for " + productName + ". Quantity after update: " + StockDictionary[productName].ToString());
         Debug.Log("Stock Dictionary After Update: " + string.Join(", ", StockDictionary.Keys));
     }
-
 
     private void AddToMyProductPage(int productposition, string productName)
     {

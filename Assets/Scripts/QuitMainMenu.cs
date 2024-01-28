@@ -5,10 +5,16 @@ using UnityEngine.SceneManagement;
 
 public class QuitMainMenu : MonoBehaviour
 {
-    public void Quit()
+    public void Quit()// on main menu screen
     {
         Application.Quit();
         Debug.Log("Player Has Quit The Game");
-        
+
+
+    }
+    void Start()
+    {
+
+
     }
 }

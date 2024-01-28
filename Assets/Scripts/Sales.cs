@@ -1,5 +1,6 @@
 using MySql.Data.MySqlClient;
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,7 +10,10 @@ public class Sales : MonoBehaviour
     private string connectionString = "Server=localhost;Database=newproducts;User ID=root;password=Liverpool123!";
     public Button OKbutton;
     public static double CurrentRevenue = 0;
-
+    public static double CurrentCostOfSales;
+    public Canvas Warning;
+    public TextMeshProUGUI ProductLowStock;
+    public static int totalsales = 0;
 
 
 
@@ -22,6 +26,10 @@ public class Sales : MonoBehaviour
 
 
     }
+
+
+
+
 
     // Your other methods and code...
 
@@ -41,41 +49,49 @@ public class Sales : MonoBehaviour
 
     public void FetchProductsData()
     {
-        try
+        if (DatabaseManager.MyPortfolio != null && DatabaseManager.StockDictionary != null)
         {
-            foreach (string productName in DatabaseManager.MyPortfolio)
+            try
             {
-                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                List<string> portfolioCopy = new List<string>(DatabaseManager.MyPortfolio);// so not modified during iteration
+
+                foreach (string productName in portfolioCopy) // gets info about each product in users portfolio
                 {
-                    connection.Open();
-
-                    string productQuery = "SELECT PricePerUnit, QualityRating, CSRating FROM Products WHERE ProductName = @productName";
-
-                    using (MySqlCommand productCmd = new MySqlCommand(productQuery, connection))
+                    using (MySqlConnection connection = new MySqlConnection(connectionString))
                     {
-                        productCmd.Parameters.AddWithValue("@productName", productName);
+                        connection.Open();
 
-                        using (MySqlDataReader productReader = productCmd.ExecuteReader())
+                        string productQuery = "SELECT PricePerUnit, QualityRating, CSRating FROM Products WHERE ProductName = @productName";
+
+                        using (MySqlCommand productCmd = new MySqlCommand(productQuery, connection))
                         {
-                            if (productReader.Read())
-                            {
-                                double pricePerUnit = productReader.GetDouble("PricePerUnit");
-                                int qRating = productReader.GetInt32("QualityRating");
-                                int csRating = productReader.GetInt32("CSRating");
+                            productCmd.Parameters.AddWithValue("@productName", productName);
 
-                                productReader.Close();
-                                int stockCount = DatabaseManager.StockDictionary[productName.Trim()];
-                                CalculateRev(stockCount, pricePerUnit, csRating, qRating, productName);
+                            using (MySqlDataReader productReader = productCmd.ExecuteReader())
+                            {
+                                if (productReader.Read())
+                                {
+
+                                    double pricePerUnit = productReader.GetDouble("PricePerUnit");
+                                    int qRating = productReader.GetInt32("QualityRating");
+                                    int csRating = productReader.GetInt32("CSRating");
+                                    Debug.Log("product details retrieved successully for, " + productName);
+                                    productReader.Close();
+                                    int stockCount = DatabaseManager.StockDictionary[productName.Trim()];// gets no. of units in stock
+                                    CalculateRev(stockCount, pricePerUnit, csRating, qRating, productName);
+                                }
                             }
                         }
                     }
                 }
             }
+            catch (Exception e)
+            {
+                Debug.LogError("Error fetching product details: " + e.Message);
+            }
+
         }
-        catch (Exception e)
-        {
-            Debug.LogError("Error fetching product details: " + e.Message);
-        }
+
     }
 
     public void CalculateRev(int stockCount, double pricePerUnit, int qRating, int csRating, string productName)
@@ -85,24 +101,37 @@ public class Sales : MonoBehaviour
         int checkpDay = SalesPerDay(average);
         int checkdaysGone = TimeFunction.daysforward;
         stockCount = stockCount - (checkpDay * checkdaysGone);// to see whether enough stock for this day/days
-        if (stockCount <= 0)
+        DatabaseManager.StockDictionary[productName.Trim()] = DatabaseManager.StockDictionary[productName.Trim()] - (checkpDay * checkdaysGone);
+        if (stockCount <= 0 || DatabaseManager.StockDictionary[productName.Trim()] <= 0)
         {
-            Debug.Log("You have run out of stock for " + productName);
+            Debug.Log("run out of stock");
+            ProductLowStock.text = "You have run out of stock for " + productName;
+            DatabaseManager.StockDictionary.Remove(productName);
+            DatabaseManager.MyPortfolio.Remove(productName);
+            Warning.gameObject.SetActive(true);
+
         }
         else
         {
             int pDay = SalesPerDay(average);
-            int daysGone = TimeFunction.daysforward;
+            int daysGone = TimeFunction.daysforward;// gets userinput
             double revenueAdd = daysGone * pricePerUnit * pDay;
+            double costofsales = revenueAdd * 0.1;
             Debug.Log(revenueAdd);
-            CurrentRevenue += revenueAdd;
+            totalsales += pDay * daysGone;
+            CurrentRevenue += revenueAdd;// updates revenue
+            CurrentCostOfSales += costofsales; // updates cost of sales
             Debug.Log(CurrentRevenue);
-            CurrentCapital.text = (double.Parse(CurrentCapital.text) + revenueAdd).ToString();
+            CurrentCapital.text = (double.Parse(CurrentCapital.text) + revenueAdd).ToString();// updates users balance
 
         }
 
     }
-    public int SalesPerDay(int average)
+    public void OnClickOk()
+    {
+        Warning.gameObject.SetActive(false);
+    }
+    public int SalesPerDay(int average)// gets sales of product per day based on the products attributes e.g. quality rating
     {
         if (average >= 0 && average <= 4)
         {

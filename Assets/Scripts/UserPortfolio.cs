@@ -196,7 +196,7 @@ public class UserPortfolio : MonoBehaviour
         }
 
 
-        switch (productposition)
+        switch (productposition)// if a particular removal button is clicked 
         {
             case 1:
                 string productnameone = ProductOne.text;
@@ -433,8 +433,9 @@ public class UserPortfolio : MonoBehaviour
 
                             int stockcount = DatabaseManager.StockDictionary[productName];
                             double returns = stockcount * PricePerUnit / 2;
+                            FinancialData.totalassets = FinancialData.totalassets - returns * 2;
                             CurrentCapital.text = Convert.ToString(double.Parse(CurrentCapital.text) + returns);
-
+                            // gives user 50% of value of remaining stock
                             CompensationCanvas.gameObject.SetActive(true);
                             Userinfo.text = "You have been compensated £ " + returns;
                             compensation = returns;
@@ -448,7 +449,7 @@ public class UserPortfolio : MonoBehaviour
             Debug.LogError("Error fetching product details for " + productName + ": " + e.Message);
         }
     }
-    public void RemoveFromDict(string productname)
+    public void RemoveFromDict(string productname)// makes sure product no longer remains in dictionary
     {
         if (!string.IsNullOrEmpty(productname))
         {

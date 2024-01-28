@@ -22,9 +22,9 @@ public class TimeFunction : MonoBehaviour
     public RectTransform Graphcontainer;
     public Canvas FinancePage;
     public Canvas Homepage;
-    List<string> usersportfolio = DatabaseManager.MyPortfolio;
     public static int totaldayspassed = 0;
     public FinancialData financialDataInstance;
+
 
 
     void Start()
@@ -37,24 +37,15 @@ public class TimeFunction : MonoBehaviour
 
 
     }
-    private void OnApplicationQuit()
-    {
-        if (Homepage != null)
-        {
-            // This method will be called when the application is about to quit
-            // Clear the MyPortfolio list here
-            Homepage.gameObject.SetActive(true);
-            usersportfolio.Clear();
-            Homepage.gameObject.SetActive(false);
-        }
-    }
+
+
 
     public void MoveForward(string timefunctioninput)
     {
 
-        Year.rectTransform.anchoredPosition = new Vector2(-16, 200); // makes sure that when the values of these change their postion remains a constant so they dont move 
-        DayOfMonth.rectTransform.anchoredPosition = new Vector2(-16, 133);
-        Weekday.rectTransform.anchoredPosition = new Vector2(-16, 63);
+        Year.rectTransform.anchoredPosition = new Vector2(-16, 169); // makes sure that when the values of these change their postion remains a constant so they dont move 
+        DayOfMonth.rectTransform.anchoredPosition = new Vector2(-16, 111);
+        Weekday.rectTransform.anchoredPosition = new Vector2(-16, 45);
 
         timefunctioninput = Input.text;// takes the input from user
         int.TryParse(timefunctioninput, out int value); // attempts to convert it to int
@@ -77,9 +68,9 @@ public class TimeFunction : MonoBehaviour
         }
         MonthsYears(value);
         string[] WeekDay = new string[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
-
         if (value <= 7)
         {
+            Debug.Log("called");
             WeekDayIndex = WeekDayIndex + value; //day of week updated when user inputs an integer value within the range
             ValidWeekday(WeekDay, WeekDayIndex);
             if (financialDataInstance != null)
@@ -262,7 +253,7 @@ public class TimeFunction : MonoBehaviour
                 diff = CurrentDayofMonth - DecDays;
                 startval = diff;
                 CurrentDayofMonth = startval;
-                CurrentYear = CurrentYear += 1; // 
+                CurrentYear = CurrentYear += 1; // updates the year
             }
         }
 
