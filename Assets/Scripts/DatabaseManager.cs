@@ -32,7 +32,7 @@ public class DatabaseManager : MonoBehaviour
     public Canvas DisplayQuantityCanvas;
     public TMP_InputField quantityInput;
 
-    public static List<string> MyPortfolio { get; } = new List<string>();
+    public static List<string> MyPortfolio { get; set; } = new List<string>();
     public static Dictionary<string, int> StockDictionary = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
 
@@ -81,6 +81,7 @@ public class DatabaseManager : MonoBehaviour
 
         }
     }
+
 
 
     public void OnInputFieldValueChanged(string input) // Checks for user input into the inputfield

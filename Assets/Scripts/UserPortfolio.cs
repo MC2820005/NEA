@@ -72,6 +72,21 @@ public class UserPortfolio : MonoBehaviour
     {
 
     }
+    public void UpdateData(UserData data)
+    {
+        ProductOne.text = data.firstproduct;
+        ProductTwo.text = data.secondproduct;
+        ProductThree.text = data.thirdproduct;
+        ProductFour.text = data.fourthproduct;
+        ProductFive.text = data.fifthproduct;
+        ProductSix.text = data.sixthproduct;
+        ProductSeven.text = data.seventhproduct;
+        ProductEight.text = data.eigthproduct;
+        ProductNine.text = data.ninthproduct;
+        ProductTen.text = data.tenthproduct;
+        CurrentCapital.text = data.Currentcapital.ToString();
+
+    }
     public void UpdateProductText(int productposition, string productName)
     {
 

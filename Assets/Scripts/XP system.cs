@@ -7,6 +7,7 @@ using System;
 using UnityEngine.UI;
 using UnityEngine.Animations;
 using JetBrains.Annotations;
+using static UnityEditor.Handles;
 
 public class XPbar : MonoBehaviour
 {
@@ -20,6 +21,9 @@ public class XPbar : MonoBehaviour
     public GameObject fillerXpBar;
     private Image fillerImage;
 
+
+
+
     void Start()
     {
         fillerXpBar = transform.Find("Filler").gameObject;
@@ -29,7 +33,21 @@ public class XPbar : MonoBehaviour
             Debug.LogError("Filler GameObject does not have an Image component.");
 
         }
+
+
     }
+
+    public void UpdateData(UserData data)
+    {
+        RankNametext.text = data.CurrentRank;
+        CurrentXP = data.CurrentXP;
+
+
+
+
+
+    }
+
     public void ConvertSaleToXP()
     {
         int numsales = GetNumberOfSales();
@@ -175,6 +193,7 @@ public class XPbar : MonoBehaviour
         if (fillerImage != null)
         {
             fillerImage.fillAmount = (float)progressPercentage; // updates the fill amount 
+
         }
     }
 

@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using TMPro;
 using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
+using static UnityEditor.Handles;
 
 public class FinancialData : MonoBehaviour
 {
@@ -52,6 +53,25 @@ public class FinancialData : MonoBehaviour
     {
 
 
+
+    }
+    public void UpdateData(UserData data)
+    {
+        Rentvalue.text = data.rent.ToString();
+        RawMvalue.text = data.rawm.ToString();
+        CostOfSalesvalue.text = data.costofsales.ToString();
+        GrossProfitvalue.text = data.grossprofit.ToString();
+        OperatingProfitvalue.text = data.opprofit.ToString();
+        CurrentLiabillitiesvalue.text = data.cliabillities.ToString();
+        CurrentAssetsvalue.text = data.cassets.ToString();
+        TotalCostsvalue.text = data.totalcosts.ToString();
+        Payablesvalue.text = data.payables.ToString();
+        GearingRatiovalue.text = data.gearingratio.ToString();
+        InventoryTurnovervalue.text = data.inventoryturnover.ToString();
+        ROCEvalue.text = data.roce.ToString();
+        Wagesvalue.text = data.wages.ToString();
+        ContributionPerUnitvalue.text = data.cpunit.ToString();
+        Recievablesvalue.text = data.recievables.ToString();
 
     }
     public int GetMonthID()

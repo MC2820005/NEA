@@ -24,6 +24,8 @@ public class TimeFunction : MonoBehaviour
     public Canvas Homepage;
     public static int totaldayspassed = 0;
     public FinancialData financialDataInstance;
+    public Canvas Info;
+
 
 
 
@@ -37,8 +39,27 @@ public class TimeFunction : MonoBehaviour
 
 
     }
+    public void OnClickInfo()
+    {
+        Info.gameObject.SetActive(true);
+    }
+    public void OnClickBack()
+    {
+        Info.gameObject.SetActive(false);
+    }
+
+    public void UpdateData(UserData data)
+    {
+        CurrentDayofMonth = data.DAYofMONTH;
+        CurrentMonthName = data.MonthName;
+        DayOfMonth.text = CurrentMonthName + " " + CurrentDayofMonth.ToString();
+        CurrentWeekDay = data.DAYofWEEK;
+        Weekday.text = CurrentWeekDay.ToString();
+        CurrentYear = data.YEAR;
+        Year.text = CurrentYear.ToString();
 
 
+    }
 
     public void MoveForward(string timefunctioninput)
     {
