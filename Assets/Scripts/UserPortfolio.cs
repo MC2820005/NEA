@@ -40,6 +40,10 @@ public class UserPortfolio : MonoBehaviour
     private string connectionstring = "Server=localhost;Database=newproducts;User ID=root;password=Liverpool123!"; // DATABASE DETAILS
     public Canvas CompensationCanvas;
     public static double compensation;
+    public Canvas EndGame;
+    public TextMeshProUGUI Outcome;
+    public Canvas MainMenu;
+
 
 
 
@@ -479,6 +483,26 @@ public class UserPortfolio : MonoBehaviour
             }
         }
 
+    }
+    public void End()
+    {
+        if (double.Parse(CurrentCapital.text) < 0)
+        {
+            EndGame.gameObject.SetActive(true);
+            Outcome.text = "Unfortunately you have now become backrupt, as your balance has fallen below £0";
+
+        }
+        else if (double.Parse(CurrentCapital.text) >= 50000000)
+        {
+            EndGame.gameObject.SetActive(true);
+            Outcome.text = "Congratulations you have the reached the ultimate aim of making £50,000,000 in your compaines bank and have become a millionaire!";
+
+        }
+    }
+    public void OnEndOK()
+    {
+        EndGame.gameObject.SetActive(false);
+        MainMenu.gameObject.SetActive(true);
     }
 
 
