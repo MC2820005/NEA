@@ -1,5 +1,4 @@
-# NEA
-Corporate Management Simulator
+# Corporate Management Simulator
 
 Overview:
 User is allowed to simulate running a business by being able to search and purchase products, add them to their portfolio,
